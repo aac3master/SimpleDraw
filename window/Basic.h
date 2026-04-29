@@ -1,10 +1,10 @@
 using namespace std;
 
-
 class Renderer
 {
     public:
         SDL_Renderer* sdl_rend = NULL;
+        int Render_type = SDL_RENDERER_SOFTWARE;
         void UpdateRenderer();
         void RenderRenderer();
         void SetupRenderer(SDL_Window* wind);
@@ -15,18 +15,24 @@ class Window
     public:
         SDL_Window* sdl_win = NULL;
         simpledr::windowm::Renderer rendr;
-        void MakeWindow(int sx, int sy, char* name);
+        int width = 0;
+        int height = 0;
+        bool running = true;
+        void (*KeyboardHandler)(SDL_Keycode) = nullptr;
+        int Render_type = SDL_RENDERER_SOFTWARE;
+        void MakeWindow(int sx, int sy, char* name, bool resizable);
         void UpdateTick();
         void DrawAll();
         void AttachRendererToWindow();
         bool CloseWindow(bool exit_sdl);
-
+        data::TwoDimensionalPoint GetXYFromSize(float w, float h);
 };
 
-void simpledr::windowm::Window::MakeWindow(int sx, int sy, char* name = "simple program")//Why not class? IDK.
+void simpledr::windowm::Window::MakeWindow(int sx, int sy, char* name = "simple program", bool resizable = false)//Why not class? IDK.
 {
-    Window::sdl_win = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sx, sy, SDL_WINDOW_SHOWN );
-
+    Window::sdl_win = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sx, sy, SDL_WINDOW_SHOWN | (resizable ? SDL_WINDOW_RESIZABLE : 0));
+    Window::width = sx;
+    Window::height = sy;
 
     if( Window::sdl_win == NULL )
     {
@@ -40,10 +46,25 @@ void simpledr::windowm::Window::UpdateTick()//Anti white screen TM
 
     SDL_PollEvent( &e );
     Window::rendr.UpdateRenderer();
+    SDL_GetWindowSize(Window::sdl_win, &(Window::width), &(Window::height));
     SDL_UpdateWindowSurface(Window::sdl_win);
+    if( e.type == SDL_QUIT )
+    {
+        Window::running = false;
+    }
+    else if(e.type == SDL_KEYDOWN && Window::KeyboardHandler != nullptr)
+    {
+        Window::KeyboardHandler(e.key.keysym.sym);
+    }
 }
 
-void simpledr::windowm::Window::DrawAll()//Anti white screen TM
+data::TwoDimensionalPoint simpledr::windowm::Window::GetXYFromSize(float w, float h)
+{
+    data::TwoDimensionalPoint Res = {width*w, height*h};
+    return Res;
+}
+
+void simpledr::windowm::Window::DrawAll()
 {
     Window::rendr.RenderRenderer();
 }
@@ -69,6 +90,7 @@ void simpledr::windowm::Renderer::RenderRenderer()//Show renderer result in rend
 
 void simpledr::windowm::Window::AttachRendererToWindow()
 {
+    Window::rendr.Render_type = Window::Render_type;
     Window::rendr.SetupRenderer(Window::sdl_win);
 }
 

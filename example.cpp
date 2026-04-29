@@ -20,7 +20,6 @@ int main( int argc, char * argv[] ) //For user: add here quit bool to control wh
     simpledr::drawm::Sprite my_sprite;
     my_sprite.where_draw = my_window;
 
-
     my_sprite.texture_path = "SimpleDraw/smile.png";
     my_sprite.SetTexture();
     my_sprite.x = 0;//set x pos (also can be y for hight), in example making sprite be almost in center

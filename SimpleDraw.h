@@ -7,6 +7,8 @@
 //define for shapes
 #define CompileShapes
 
+//define for event handler and keyboard
+#define CompileEvents
 
 #include <exception>
 #include <string>
@@ -18,11 +20,28 @@
 
 namespace simpledr
 {
+    using namespace simpledr;
+    namespace data
+    {
+        struct TwoDimensionalPoint
+        {
+            float x;
+            float y;
+        };
+    }
     #include "lib_main/Init.h"
+    #ifdef CompileEvents
+        namespace event
+        {
+            #include "lib_main/Events.h"
+        }
+    #endif // CompileEvents
     namespace windowm
     {
         #include "window/Basic.h"
-        #include "window/Mouse.h"
+        #ifdef CompileWindowEx
+            #include "window/Mouse.h"
+        #endif // CompileWindowEx
     }
     namespace drawm
     {
@@ -35,6 +54,7 @@ namespace simpledr
             }
         #endif // CompileShapes
     }
+
 }
 
 

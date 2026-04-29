@@ -7,11 +7,16 @@ class Sprite //Main class in all lib! (just image)
         SDL_Texture* texture = NULL;
         void SetTexture();
         void Draw();
-        simpledr::windowm::Window where_draw;
+        windowm::Window* where_draw;
         int x = 0;
         int y = 0;
+        float w = 0;
+        float h = 0;
+        int center = 0; //0 - left up, 1 - centered
         int sx = 100;
         int sy = 100;
+        float sw = 0;
+        float sh = 0;
         int angle = 0;
 
     private:
@@ -39,7 +44,7 @@ SDL_Texture* Sprite::loadTexture(string path) //XstolenX recreated from lazyfoo.
         else
         {
             //Convert surface to screen format
-            optimizedTexture = SDL_CreateTextureFromSurface(Sprite::where_draw.rendr.sdl_rend, loadedSurface );
+            optimizedTexture = SDL_CreateTextureFromSurface(Sprite::where_draw->rendr.sdl_rend, loadedSurface );
             if( optimizedTexture == NULL )
             {
                 printf( "Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
@@ -72,7 +77,7 @@ void Sprite::Draw()
 {
 
 
-    if (Sprite::where_draw.rendr.sdl_rend == NULL)
+    if (Sprite::where_draw->rendr.sdl_rend == NULL)
     { //Warning! This is experimental function (getting window surface without inputed surface)!!! (not working anymore!!!) TODO:bring back
         //SDL_Window* current_window = NULL;
         //current_window = SDL_GL_GetCurrentWindow();
@@ -83,9 +88,28 @@ void Sprite::Draw()
     }
     else
     {
-        SDL_Rect sprite_rect = {Sprite::x, Sprite::y, Sprite::sx, Sprite::sy};
+        SDL_Rect sprite_rect = {0,0,Sprite::sx,Sprite::sy};;
+        sprite_rect.w += Sprite::where_draw->GetXYFromSize(Sprite::sw, Sprite::sh).x;
+        sprite_rect.h += Sprite::where_draw->GetXYFromSize(Sprite::sw, Sprite::sh).y;
+        switch (Sprite::center)
+        {
+            case 0:
+                sprite_rect.x = Sprite::x;
+                sprite_rect.y = Sprite::y;
+                break;
+            case 1:
+                sprite_rect.x = Sprite::x-(sprite_rect.w/2);
+                sprite_rect.y = Sprite::y-(sprite_rect.h/2);
+                break;
+            default:
+                sprite_rect.x = Sprite::x;
+                sprite_rect.y = Sprite::y;
+                break;
+        }
+        sprite_rect.x += Sprite::where_draw->GetXYFromSize(Sprite::w, Sprite::h).x;
+        sprite_rect.y += Sprite::where_draw->GetXYFromSize(Sprite::w, Sprite::h).y;
         //SDL_BlitScaled( Sprite::texture, NULL, Sprite::surface_where_draw, &sprite_rect);
-        SDL_RenderCopyEx(Sprite::where_draw.rendr.sdl_rend, Sprite::texture, NULL, &sprite_rect, Sprite::angle, NULL, SDL_FLIP_NONE);//copyex gives more functions than blit
+        SDL_RenderCopyEx(Sprite::where_draw->rendr.sdl_rend, Sprite::texture, NULL, &sprite_rect, Sprite::angle, NULL, SDL_FLIP_NONE);//copyex gives more functions than blit
     }
 
 }
